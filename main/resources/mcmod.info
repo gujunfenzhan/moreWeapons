@@ -1,0 +1,16 @@
+[
+{
+  "modid": "straincraft",
+  "name": "菌种工艺",
+  "description": "菌种工艺！",
+  "version": "",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["GoldMain"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
