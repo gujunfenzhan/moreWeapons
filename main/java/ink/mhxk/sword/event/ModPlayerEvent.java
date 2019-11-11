@@ -4,6 +4,8 @@ import ink.mhxk.sword.ModBigSwordMain;
 import ink.mhxk.sword.utils.obj.WavefrontObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -13,15 +15,21 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
 public class ModPlayerEvent {
-    private WavefrontObject obj = new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/rotate_shield.obj"));
-    private ResourceLocation TEXTURE = new ResourceLocation(ModBigSwordMain.MODID, "textures/entity/rotate_shield.png");
+    /*
+    模型源地址:https://www.cgmodel.com/model-121184.html
+     */
+    public static WavefrontObject obj =  new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/rotate_shield.obj"));;
+    public static ResourceLocation TEXTURE = new ResourceLocation(ModBigSwordMain.MODID, "textures/entity/rotate_shield.png");
     @SubscribeEvent
     public void onAttack(TickEvent.PlayerTickEvent event){
         EntityPlayer entityPlayer = event.player;
@@ -67,5 +75,14 @@ public class ModPlayerEvent {
             */
 
         }
+    }
+    /*
+    预加载
+    解决第一次渲染卡顿问题
+     */
+    @SideOnly(Side.CLIENT)
+    public static void initTexture(){
+            TextureManager manager = Minecraft.getMinecraft().getTextureManager();
+            manager.loadTexture(TEXTURE,new SimpleTexture(TEXTURE));
     }
 }

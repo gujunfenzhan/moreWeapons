@@ -2,12 +2,18 @@ package ink.mhxk.sword;
 
 import ink.mhxk.sword.common.CommonProxy;
 import ink.mhxk.sword.event.ModPlayerEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 @Mod(name = ModBigSwordMain.MODNAME,modid = ModBigSwordMain.MODID,version = ModBigSwordMain.MODID)
 public class ModBigSwordMain {
@@ -30,6 +36,7 @@ public class ModBigSwordMain {
     }
     @Mod.EventHandler
     public void post(FMLPostInitializationEvent event){
+        ModPlayerEvent.initTexture();
 
     }
 }
