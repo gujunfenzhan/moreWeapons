@@ -12,6 +12,11 @@ public class CommonProxy
     @SubscribeEvent
     public void registerItems(RegistryEvent.Register<Item> event){
         event.getRegistry().register(ModItemLoader.BIG_SWORD);
+        //event.getRegistry().register(ModItemLoader.GOLD_SHIELD);
+        event.getRegistry().register(ModItemLoader.ARMOR_HEAD);
+        event.getRegistry().register(ModItemLoader.ARMOR_CHEST);
+        event.getRegistry().register(ModItemLoader.ARMOR_LEGS);
+        event.getRegistry().register(ModItemLoader.ARMOR_FEET);
     }
     @SubscribeEvent
     public void registerBlocks(RegistryEvent.Register<Block> event){

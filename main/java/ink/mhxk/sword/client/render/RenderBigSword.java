@@ -15,9 +15,9 @@ extends TileEntityItemStackRenderer {
     /*
     模型源地址:https://www.cgmodel.com/model-123939.html
      */
-    private WavefrontObject obj = new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/big_sword.obj"));
-    private ResourceLocation TEXTURE = new ResourceLocation(ModBigSwordMain.MODID, "textures/entity/big_sword.png");
-    private WavefrontObject obj2 = new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/big_sword.obj"));
+    public static WavefrontObject obj = new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/big_sword.obj"));
+    public static ResourceLocation TEXTURE = new ResourceLocation(ModBigSwordMain.MODID, "textures/entity/big_sword.png");
+    public static WavefrontObject obj2 = new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/big_sword.obj"));
     public int state = 0;
     @Override
     public void renderByItem(ItemStack itemStackIn) {
