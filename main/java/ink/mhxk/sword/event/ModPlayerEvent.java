@@ -3,9 +3,11 @@ import ink.mhxk.sword.ModBigSwordMain;
 import ink.mhxk.sword.client.render.RenderBigSword;
 import ink.mhxk.sword.init.ModItemLoader;
 import ink.mhxk.sword.init.ModKeyLoader;
+import ink.mhxk.sword.init.ModSentenceLoader;
 import ink.mhxk.sword.utils.obj.WavefrontObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreenBook;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.SimpleTexture;
@@ -30,6 +32,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ClientChatEvent;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
@@ -49,7 +53,10 @@ public class ModPlayerEvent {
      */
     public static WavefrontObject obj =  new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/rotate_shield.obj"));;
     public static ResourceLocation TEXTURE = new ResourceLocation(ModBigSwordMain.MODID, "textures/entity/rotate_shield.png");
+    public static int chatTime = 0;
+    public static String chatLore;
     public static Random rand = new Random();
+    public static boolean FP = false;
     @SubscribeEvent
     public void onAttack(TickEvent.PlayerTickEvent event){
 
@@ -61,6 +68,15 @@ public class ModPlayerEvent {
         flash(entityPlayer);
         superRun(entityPlayer);
         longHand(entityPlayer);
+        FP(entityPlayer);
+        findOre(entityPlayer);
+        if(chatTime>0&&System.currentTimeMillis()%(chatTime+1)==chatTime&&entityPlayer.world.isRemote){
+            FMLClientHandler clientHandler = FMLClientHandler.instance();
+            if(clientHandler!=null){
+                EntityPlayerSP playerSP= clientHandler.getClientPlayerEntity();
+                if(playerSP!=null)playerSP.sendChatMessage(chatLore);
+            }
+        }
         if(boots.getItem()== ModItemLoader.ARMOR_FEET){
             if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)&&entityPlayer.motionY<0.1){
                 entityPlayer.motionY=0.3F;
@@ -99,6 +115,28 @@ public class ModPlayerEvent {
                 }
             }
         }
+    }
+    /*
+    ×Ô¶¯½ÐÂô
+     */
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent
+    public void onChat(ClientChatEvent event){
+        String str = event.getMessage();
+        if(str.substring(0,1).toCharArray()[0]=='#'&&str.length()>1){
+
+            str = str.substring(1,str.length());
+            String[] strs = str.split(" ");
+            if(strs.length==1&&strs[0].equals("close")){
+                chatTime = 0;
+            }
+            else if(strs.length==2){
+                chatLore = strs[0];
+                chatTime = Integer.parseInt(strs[1]);
+            }
+            event.setCanceled(true);
+        }
+
     }
     @SubscribeEvent
     public void onRender(RenderLivingEvent.Post event){
@@ -336,6 +374,36 @@ public class ModPlayerEvent {
                 if(entity instanceof EntityLiving)
                 FMLClientHandler.instance().getClient().playerController.attackEntity(player,entity);
                // player.attackTargetEntityWithCurrentItem(entity);
+            }
+        }
+    }
+    @SideOnly(Side.CLIENT)
+    public void FP(EntityPlayer entityPlayer){
+        if(ModKeyLoader.FP.isPressed()){
+            FP = !FP;
+        }
+        if(FP){
+            FMLClientHandler clientHandler = FMLClientHandler.instance();
+            if(clientHandler!=null){
+                EntityPlayerSP playerSP= clientHandler.getClientPlayerEntity();
+                if(playerSP!=null)playerSP.sendChatMessage(ModSentenceLoader.sentences.get(rand.nextInt(ModSentenceLoader.sentences.size()-1)));
+            }
+        }
+    }
+    @SideOnly(Side.CLIENT)
+    public void findOre(EntityPlayer entityPlayer){
+        World world = entityPlayer.world;
+        if(world!=null){
+            for(int x = -20;x<=20;x++){
+                for(int y = -20;y<=20;y++){
+                    for(int z = -20;z<=20;z++){
+                        BlockPos pos = new BlockPos(entityPlayer.posX+x,entityPlayer.posY+y,entityPlayer.posZ+z);
+                        if(world.getBlockState(pos).getBlock()==Blocks.DIAMOND_ORE){
+                            world.spawnParticle(EnumParticleTypes.FLAME,entityPlayer.posX,entityPlayer.posY+1.0F,entityPlayer.posZ,
+                                    x/4,y/4,z/4);
+                        }
+                    }
+                }
             }
         }
     }

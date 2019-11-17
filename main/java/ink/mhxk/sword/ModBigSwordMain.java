@@ -3,6 +3,7 @@ package ink.mhxk.sword;
 import ink.mhxk.sword.common.CommonProxy;
 import ink.mhxk.sword.event.ModPlayerEvent;
 import ink.mhxk.sword.init.ModKeyLoader;
+import ink.mhxk.sword.init.ModSentenceLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -32,6 +33,6 @@ public class ModBigSwordMain {
     @Mod.EventHandler
     public void post(FMLPostInitializationEvent event){
         ModPlayerEvent.initTexture();
-
+        new ModSentenceLoader();
     }
 }
