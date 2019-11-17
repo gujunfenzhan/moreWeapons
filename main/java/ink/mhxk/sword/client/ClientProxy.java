@@ -18,7 +18,6 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import sun.plugin2.message.PluginMessage;
 
 public class ClientProxy
 extends CommonProxy {
