@@ -2,6 +2,7 @@ package ink.mhxk.sword;
 
 import ink.mhxk.sword.common.CommonProxy;
 import ink.mhxk.sword.event.ModPlayerEvent;
+import ink.mhxk.sword.init.ModConfigLoader;
 import ink.mhxk.sword.init.ModKeyLoader;
 import ink.mhxk.sword.init.ModSentenceLoader;
 import net.minecraftforge.common.MinecraftForge;
@@ -25,6 +26,7 @@ public class ModBigSwordMain {
         INSTANCE = this;
         MinecraftForge.EVENT_BUS.register(proxy);
         MinecraftForge.EVENT_BUS.register(new ModPlayerEvent());
+        new ModConfigLoader(event);
     }
     @Mod.EventHandler
     public void init(FMLInitializationEvent event){

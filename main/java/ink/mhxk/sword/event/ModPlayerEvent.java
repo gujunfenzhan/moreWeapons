@@ -1,6 +1,7 @@
 package ink.mhxk.sword.event;
 import ink.mhxk.sword.ModBigSwordMain;
 import ink.mhxk.sword.client.render.RenderBigSword;
+import ink.mhxk.sword.init.ModConfigLoader;
 import ink.mhxk.sword.init.ModItemLoader;
 import ink.mhxk.sword.init.ModKeyLoader;
 import ink.mhxk.sword.init.ModSentenceLoader;
@@ -17,6 +18,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
@@ -36,7 +38,9 @@ import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -51,6 +55,7 @@ public class ModPlayerEvent {
     /*
     模型源地址:https://www.cgmodel.com/model-121184.html
      */
+    public static int fpNumber = 0;
     public static WavefrontObject obj =  new WavefrontObject(new ResourceLocation(ModBigSwordMain.MODID, "models/entity/rotate_shield.obj"));;
     public static ResourceLocation TEXTURE = new ResourceLocation(ModBigSwordMain.MODID, "textures/entity/rotate_shield.png");
     public static int chatTime = 0;
@@ -69,7 +74,7 @@ public class ModPlayerEvent {
         superRun(entityPlayer);
         longHand(entityPlayer);
         FP(entityPlayer);
-        findOre(entityPlayer);
+        //findOre(entityPlayer);
         if(chatTime>0&&System.currentTimeMillis()%(chatTime+1)==chatTime&&entityPlayer.world.isRemote){
             FMLClientHandler clientHandler = FMLClientHandler.instance();
             if(clientHandler!=null){
@@ -299,9 +304,49 @@ public class ModPlayerEvent {
             //bookIsModified = true;
        // }
     }
+    /*
+    追踪箭挂
+    由于箭的处理在服务端,仅在单人有效
+     */
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent
-    public void project(ProjectileImpactEvent.Arrow event){
-        System.out.println("???");
+    public void entityInit(EntityJoinWorldEvent event){
+       Entity entity =  event.getEntity();
+       if(entity instanceof EntityArrow&&entity.world!=null){
+           EntityArrow arrow = (EntityArrow)entity;
+           AxisAlignedBB aabb = arrow.getEntityBoundingBox().grow(100.0F);
+           List<EntityLiving> entityLiving = entity.world.getEntitiesWithinAABB(EntityLiving.class,aabb);
+           double len = Double.MAX_VALUE;
+           double len2;
+           EntityLiving entityLiving1=null;
+           for (EntityLiving living : entityLiving) {
+                //arrow.setPositionAndUpdate(living.posX,living.posY,living.posZ);
+               len2 = arrow.getDistanceSq(living);
+               if(len2<len&&check(entity.world,arrow,living)){
+                   len = len2;
+                   entityLiving1 = living;
+               }
+           }
+           if(entityLiving1!=null) {
+               arrow.motionX = entityLiving1.posX - arrow.posX;
+               arrow.motionY = entityLiving1.posY - arrow.posY;
+               arrow.motionZ = entityLiving1.posZ - arrow.posZ;
+           }
+       }
+    }
+    public boolean check(World world,Entity entity1,Entity entity2){
+        if(world==null)return false;
+        double vaule = 0;
+        double x;
+        double y;
+        double z;
+        for(vaule = 0;vaule<1.0D;vaule+=0.1){
+            x = entity1.posX*vaule+(1.0D-vaule)*entity2.posX;
+            y = entity1.posY*vaule+(1.0D-vaule)*entity2.posY;
+            z = entity1.posZ*vaule+(1.0D-vaule)*entity2.posZ;
+            if(world.getBlockState(new BlockPos(x,y,z)).getBlock()!=Blocks.AIR)return false;
+        }
+        return true;
     }
     public String getRandString(){
         StringBuffer sb = new StringBuffer();
@@ -379,17 +424,21 @@ public class ModPlayerEvent {
     }
     @SideOnly(Side.CLIENT)
     public void FP(EntityPlayer entityPlayer){
+        fpNumber++;
         if(ModKeyLoader.FP.isPressed()){
             FP = !FP;
         }
-        if(FP){
+        if(FP&&fpNumber> ModConfigLoader.fpSpeed){
+            fpNumber = 0;
             FMLClientHandler clientHandler = FMLClientHandler.instance();
             if(clientHandler!=null){
                 EntityPlayerSP playerSP= clientHandler.getClientPlayerEntity();
-                if(playerSP!=null)playerSP.sendChatMessage(ModSentenceLoader.sentences.get(rand.nextInt(ModSentenceLoader.sentences.size()-1)));
+                if(playerSP!=null&&ModSentenceLoader.sentences.size()>0)playerSP.sendChatMessage(ModSentenceLoader.sentences.get(rand.nextInt(ModSentenceLoader.sentences.size()-1)));
             }
         }
     }
+    /*
+    目前暂不支持
     @SideOnly(Side.CLIENT)
     public void findOre(EntityPlayer entityPlayer){
         World world = entityPlayer.world;
@@ -406,5 +455,5 @@ public class ModPlayerEvent {
                 }
             }
         }
-    }
+    }*/
 }
