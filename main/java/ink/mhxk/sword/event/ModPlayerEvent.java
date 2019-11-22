@@ -7,6 +7,8 @@ import ink.mhxk.sword.init.ModKeyLoader;
 import ink.mhxk.sword.init.ModSentenceLoader;
 import ink.mhxk.sword.utils.obj.WavefrontObject;
 import io.netty.buffer.Unpooled;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreenBook;
@@ -16,6 +18,8 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MoverType;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -29,18 +33,17 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.client.CPacketCustomPayload;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.pathfinding.PathNavigate;
+import net.minecraft.pathfinding.PathNavigateGround;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatEvent;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -62,6 +65,9 @@ public class ModPlayerEvent {
     public static String chatLore;
     public static Random rand = new Random();
     public static boolean FP = false;
+    public static boolean Mining = false;
+    public static BlockPos OrePos = null;
+    public static PathNavigate pathNavigate;
     @SubscribeEvent
     public void onAttack(TickEvent.PlayerTickEvent event){
 
@@ -74,6 +80,7 @@ public class ModPlayerEvent {
         superRun(entityPlayer);
         longHand(entityPlayer);
         FP(entityPlayer);
+        //Mining(entityPlayer);还是我太菜了
         //findOre(entityPlayer);
         if(chatTime>0&&System.currentTimeMillis()%(chatTime+1)==chatTime&&entityPlayer.world.isRemote){
             FMLClientHandler clientHandler = FMLClientHandler.instance();
@@ -456,4 +463,71 @@ public class ModPlayerEvent {
             }
         }
     }*/
+    @SideOnly(Side.CLIENT)
+    public void Mining(EntityPlayer player) {
+        if (ModKeyLoader.mining.isPressed()) {
+            Mining = !Mining;
+        }
+
+        if (Mining) {
+            World world = player.world;
+            if(pathNavigate==null&&player!=null){
+                //pathNavigate = new PathNavigateGround()
+            }
+            FMLClientHandler clientHandler = FMLClientHandler.instance();
+            if (clientHandler == null) return;
+            EntityPlayerSP playerSP = clientHandler.getClientPlayerEntity();
+            if (world != null && playerSP != null) {
+                System.out.println("挖矿");
+
+                Minecraft mc = Minecraft.getMinecraft();
+                BlockPos pos = new BlockPos(player);
+            /*
+            IBlockState iblockstate = mc.world.getBlockState(pos);
+            mc.getTutorial().onHitBlock(mc.world, pos, iblockstate, 0.0F);
+            FMLClientHandler.instance().getClientPlayerEntity().connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK,pos.up(),EnumFacing.DOWN));
+            iblockstate.getBlock().onBlockClicked(mc.world, pos,mc.player);*/
+            //if(OrePos==null)findOre(player);
+            //if(OrePos==null)return;
+                BlockPos poss = new BlockPos(player).east();
+
+                if (world.getBlockState(poss).getMaterial() != Material.AIR) {
+                    FMLClientHandler.instance().getClient().playerController.onPlayerDamageBlock(poss, EnumFacing.DOWN);
+                } else {
+                    FMLClientHandler.instance().getClient().playerController.onPlayerDamageBlock(poss.up(), EnumFacing.DOWN);
+                }
+                if (world.getBlockState(poss).getMaterial() == Material.AIR && world.getBlockState(poss.up()).getMaterial() == Material.AIR)
+                    FMLClientHandler.instance().getClientPlayerEntity().move(MoverType.PLAYER,poss.getX()-player.posX,poss.getY()-player.posY,poss.getZ()-player.posZ);
+                   // FMLClientHandler.instance().getClientPlayerEntity().moveToBlockPosAndAngles(OrePos, player.rotationYaw, player.rotationPitch);
+                   // EntityZombie zombie = new EntityZombie(world);
+                    //zombie.getNavigator().tryMoveToXYZ()
+
+            }
+        }
+    }
+    public void findOre(EntityPlayer player){
+        World world = player.world;
+        BlockPos ppos = new BlockPos(player);
+        int len = Integer.MAX_VALUE;
+        for(int x = -100;x<100;x++){
+            for(int y = -100;y<100;y++){
+                for(int z = -100;z<100;z++){
+                    BlockPos npos = ppos.add(x,y,z);
+                    if(world.getBlockState(npos).getBlock()==Blocks.DIAMOND_ORE){
+                        int nlen = getQ(ppos,npos);
+                        if(nlen<len){
+                            OrePos = npos;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public int getQ(BlockPos pos1,BlockPos pos2){
+        int x = Math.abs(pos1.getX())-Math.abs(pos2.getX());
+        int y = Math.abs(pos1.getY())-Math.abs(pos2.getY());
+        int z = Math.abs(pos1.getZ())-Math.abs(pos2.getZ());
+        return x*x+y*y+z*z;
+    }
+
 }
