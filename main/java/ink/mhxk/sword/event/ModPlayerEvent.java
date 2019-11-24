@@ -13,6 +13,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreenBook;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.Entity;
@@ -26,6 +28,7 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -68,6 +71,9 @@ public class ModPlayerEvent {
     public static boolean Mining = false;
     public static BlockPos OrePos = null;
     public static PathNavigate pathNavigate;
+    public static boolean findOre = false;
+    public static int finOreTime = 0;
+    private RenderItem renderItem;
     @SubscribeEvent
     public void onAttack(TickEvent.PlayerTickEvent event){
 
@@ -81,7 +87,7 @@ public class ModPlayerEvent {
         longHand(entityPlayer);
         FP(entityPlayer);
         //Mining(entityPlayer);还是我太菜了
-        //findOre(entityPlayer);
+        renderOreAndUpdate(entityPlayer);
         if(chatTime>0&&System.currentTimeMillis()%(chatTime+1)==chatTime&&entityPlayer.world.isRemote){
             FMLClientHandler clientHandler = FMLClientHandler.instance();
             if(clientHandler!=null){
@@ -505,6 +511,34 @@ public class ModPlayerEvent {
             }
         }
     }
+    public void renderOreAndUpdate(EntityPlayer player){
+        if(renderItem == null)renderItem = Minecraft.getMinecraft().getRenderItem();
+        if(ModKeyLoader.findOre.isPressed())findOre = !findOre;
+        if(player.world!=null&&findOre){
+            if(!player.world.isRemote)return;
+            if(OrePos==null||player.world.getBlockState(OrePos).getBlock()!=Blocks.DIAMOND_ORE){
+                finOreTime++;
+                if(finOreTime<20)return;
+                finOreTime = 0;
+                findOre(player);
+            }
+            double x = OrePos.getX()-player.posX;
+            double y = OrePos.getY()-player.posY;
+            double z = OrePos.getZ()-player.posZ;
+            while(true){
+                if(x>1||y>1||z>1){
+                    x = x/2;
+                    y = y/2;
+                    z = z/2;
+                }else{
+                    break;
+                }
+            }
+            player.world.spawnParticle(EnumParticleTypes.FLAME,player.posX+x,player.posY+1.0F+y,player.posZ+z, 0.0F,0.0F,0.0F);
+           // System.out.println("渲染");
+        }
+    }
+
     public void findOre(EntityPlayer player){
         World world = player.world;
         BlockPos ppos = new BlockPos(player);
@@ -517,6 +551,7 @@ public class ModPlayerEvent {
                         int nlen = getQ(ppos,npos);
                         if(nlen<len){
                             OrePos = npos;
+                            //Blocks.DIAMOND_ORE.
                         }
                     }
                 }

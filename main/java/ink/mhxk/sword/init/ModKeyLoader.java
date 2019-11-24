@@ -16,6 +16,7 @@ public class ModKeyLoader {
     public static KeyBinding FP;
     public static KeyBinding trackingArrow;
     public static KeyBinding mining;
+    public static KeyBinding findOre;
     public ModKeyLoader(){
         fly = new KeyBinding("key.bigsword.fly", Keyboard.KEY_SPACE,"key.categories.bigsword");
         flash = new KeyBinding("key.bigsword.flash",Keyboard.KEY_R,"key.categories.bigsword");
@@ -24,6 +25,7 @@ public class ModKeyLoader {
         FP = new KeyBinding("key.bigsword.FP",Keyboard.KEY_P,"key.categories.bigsword");
         trackingArrow = new KeyBinding("key.bigsword.trackingArrow",Keyboard.KEY_K,"key.categories.bigsword");
         mining = new KeyBinding("key.bigsword.mining",Keyboard.KEY_F12,"key.categories.bigsword");
+        findOre = new KeyBinding("key.bigsword.findOre",Keyboard.KEY_F12,"key.categories.bigsword");
         ClientRegistry.registerKeyBinding(fly);
         ClientRegistry.registerKeyBinding(flash);
         ClientRegistry.registerKeyBinding(superRun);
@@ -31,5 +33,6 @@ public class ModKeyLoader {
         ClientRegistry.registerKeyBinding(FP);
         ClientRegistry.registerKeyBinding(trackingArrow);
         ClientRegistry.registerKeyBinding(mining);
+        ClientRegistry.registerKeyBinding(findOre);
     }
 }
